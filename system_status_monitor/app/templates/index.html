@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统状态</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    color-scheme: light dark;
+    --page: #fafafa;
+    --card: #ffffff;
+    --card-border: #d8d8d8;
+    --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --text: #171b20;
+    --muted: #7b818d;
+    --soft: #eaf8f1;
+    --score-label: #626874;
+    --metric-value: #707684;
+    --subtitle: #9aa0aa;
+    --green: #19be5d;
+    --yellow: #d4a017;
+    --orange: #f97316;
+    --red: #e8453c;
+    --radius: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #111111;
+      --card: #181818;
+      --card-border: #363636;
+      --card-shadow: none;
+      --text: #e8e8e8;
+      --muted: #a0a0a0;
+      --soft: #232b26;
+      --score-label: #b3b6bf;
+      --metric-value: #c3c7cf;
+      --subtitle: #8f949f;
+    }
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--page);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 18px 42px 30px;
+  }
+
+  .dashboard-shell {
+    width: 100%;
+    max-width: 1780px;
+    margin: 0 auto;
+    zoom: 0.88;
+    transform: scale(0.88);
+    transform-origin: top center;
+  }
+
+  .app-title {
+    text-align: center;
+    font-size: clamp(2.25rem, 2.7vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: 0;
+    margin-bottom: 40px;
+    white-space: nowrap;
+  }
+
+  .runtime-card,
+  .health-card,
+  .metric-card-grid,
+  .metric-group {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow);
+  }
+
+  .runtime-card {
+    min-height: 98px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 54px;
+    margin-bottom: 22px;
+    padding: 22px 34px;
+  }
+
+  .runtime-label {
+    color: var(--muted);
+    font-size: clamp(1.25rem, 1.35vw, 1.65rem);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .runtime-value {
+    color: var(--text);
+    font-size: clamp(1.28rem, 1.45vw, 1.78rem);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .health-card {
+    min-height: 340px;
+    display: grid;
+    grid-template-columns: 330px 1fr;
+    align-items: center;
+    gap: clamp(48px, 5vw, 98px);
+    margin-bottom: 22px;
+    padding: 42px clamp(70px, 7vw, 116px);
+  }
+
+  .score-ring {
+    --size: 250px;
+    position: relative;
+    width: var(--size);
+    height: var(--size);
+    justify-self: center;
+    flex-shrink: 0;
+  }
+
+  .score-ring svg,
+  .metric-ring svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    transform: rotate(-90deg);
+  }
+
+  .ring-bg {
+    fill: none;
+    stroke: var(--soft);
+    stroke-width: 11;
+  }
+
+  .ring-fg {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 11;
+    stroke-linecap: round;
+    transition: stroke 0.6s ease, stroke-dashoffset 0.6s ease;
+  }
+
+  .score-center,
+  .metric-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .score-value {
+    color: var(--green);
+    font-size: clamp(3.1rem, 4vw, 4.2rem);
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .score-label {
+    color: var(--score-label);
+    font-size: 1.08rem;
+    margin-top: 10px;
+  }
+
+  .health-bars {
+    display: grid;
+    gap: 18px;
+  }
+
+  .dim-row {
+    display: grid;
+    grid-template-columns: 108px minmax(120px, 1fr) 88px;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .dim-label {
+    color: var(--text);
+    font-size: clamp(1.22rem, 1.32vw, 1.52rem);
+    white-space: nowrap;
+  }
+
+  .dim-track {
+    height: 10px;
+    background: var(--soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .dim-fill {
+    height: 100%;
+    min-width: 8px;
+    border-radius: 999px;
+    background: var(--green);
+    transition: width 0.6s ease, background 0.6s ease;
+  }
+
+  .dim-score {
+    color: var(--green);
+    font-size: clamp(1.12rem, 1.28vw, 1.44rem);
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-card-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(118px, 1fr));
+    gap: clamp(16px, 2.3vw, 42px);
+    min-height: 338px;
+    padding: 62px clamp(44px, 5vw, 82px) 50px;
+  }
+
+  .metric-group {
+    display: contents;
+  }
+
+  .metric-card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+  }
+
+  .metric-ring {
+    --size: 150px;
+    position: relative;
+    width: var(--size);
+    height: var(--size);
+    margin-bottom: 18px;
+    flex-shrink: 0;
+  }
+
+  .metric-ring .ring-bg,
+  .metric-ring .ring-fg {
+    stroke-width: 9;
+  }
+
+  .metric-value {
+    color: var(--metric-value);
+    font-size: clamp(1.38rem, 1.55vw, 1.82rem);
+    line-height: 1;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-title {
+    color: var(--text);
+    font-size: clamp(1.22rem, 1.32vw, 1.52rem);
+    line-height: 1.1;
+    margin-bottom: 8px;
+    white-space: nowrap;
+  }
+
+  .metric-subtitle {
+    color: var(--subtitle);
+    font-size: clamp(0.86rem, 0.94vw, 1rem);
+    line-height: 1.25;
+    min-height: 1.25em;
+  }
+
+  .error-tag {
+    display: none;
+    width: max-content;
+    margin: 0 auto 18px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--red);
+    color: #fff;
+    font-size: 0.95rem;
+  }
+
+  .error-tag.is-visible {
+    display: block;
+  }
+
+  @media (max-width: 980px) {
+    body {
+      padding: 54px 30px 64px;
+    }
+
+    .dashboard-shell {
+      max-width: 720px;
+    }
+
+    .app-title {
+      font-size: 2.65rem;
+      margin-bottom: 38px;
+    }
+
+    .runtime-card {
+      min-height: 99px;
+      gap: 46px;
+      margin-bottom: 22px;
+      padding: 20px 28px;
+    }
+
+    .health-card {
+      min-height: 302px;
+      grid-template-columns: 168px 1fr;
+      gap: 46px;
+      padding: 32px 44px 32px 30px;
+    }
+
+    .score-ring {
+      --size: 142px;
+    }
+
+    .score-value {
+      font-size: 2.42rem;
+    }
+
+    .score-label {
+      font-size: 0.72rem;
+      margin-top: 4px;
+    }
+
+    .health-bars {
+      gap: 14px;
+    }
+
+    .dim-row {
+      grid-template-columns: 82px minmax(80px, 1fr) 64px;
+      gap: 20px;
+    }
+
+    .dim-label {
+      font-size: 1.32rem;
+    }
+
+    .dim-score {
+      font-size: 1.22rem;
+    }
+
+    .dim-track {
+      height: 9px;
+    }
+
+    .metric-card-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 0 22px;
+      min-height: 268px;
+      padding: 28px 36px 20px;
+    }
+
+    .metric-ring {
+      --size: 150px;
+      margin-bottom: 14px;
+    }
+
+    .metric-title {
+      font-size: 1.32rem;
+      margin-bottom: 6px;
+    }
+
+    .metric-subtitle {
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (max-width: 700px) {
+    :root {
+      --mobile-card-gap: 18px;
+    }
+
+    body {
+      padding: 50px 30px 60px;
+    }
+
+    .dashboard-shell {
+      max-width: none;
+      zoom: 1;
+      transform: none;
+    }
+
+    .app-title {
+      font-size: 2.7rem;
+      margin-bottom: 38px;
+    }
+
+    .runtime-card {
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: var(--mobile-card-gap);
+      padding: 20px 86px;
+    }
+
+    .runtime-label {
+      font-size: 1.42rem;
+    }
+
+    .runtime-value {
+      font-size: 1.38rem;
+    }
+
+    .health-card {
+      grid-template-columns: 162px 1fr;
+      gap: 42px;
+      margin-bottom: var(--mobile-card-gap);
+      padding: 32px 44px 32px 32px;
+    }
+
+    .score-ring {
+      --size: 140px;
+    }
+
+    .metric-card-grid {
+      background: transparent;
+      border-radius: 0;
+      border: 0;
+      box-shadow: none;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--mobile-card-gap);
+      min-height: 0;
+      padding: 0;
+    }
+
+    .metric-group {
+      background: var(--card);
+      border-radius: var(--radius);
+      display: grid;
+      padding: 28px 36px 20px;
+    }
+
+    .metric-group-primary {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .metric-group-secondary {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    :root {
+      --mobile-card-gap: 14px;
+    }
+
+    body {
+      padding: 34px 16px 42px;
+    }
+
+    .app-title {
+      font-size: 1.78rem;
+      margin-bottom: 22px;
+    }
+
+    .runtime-card {
+      display: grid;
+      grid-template-columns: max-content max-content;
+      justify-content: center;
+      min-height: 50px;
+      gap: 28px;
+      margin-bottom: var(--mobile-card-gap);
+      padding: 12px 18px;
+    }
+
+    .runtime-label,
+    .runtime-value {
+      font-size: 1rem;
+    }
+
+    .health-card {
+      min-height: 0;
+      grid-template-columns: 82px 1fr;
+      gap: 14px;
+      margin-bottom: var(--mobile-card-gap);
+      padding: 18px 18px 18px 16px;
+    }
+
+    .score-ring {
+      --size: 76px;
+    }
+
+    .score-value {
+      font-size: 1.44rem;
+    }
+
+    .score-label {
+      font-size: 0.5rem;
+      line-height: 1;
+      margin-top: 4px;
+    }
+
+    .health-bars {
+      gap: 5px;
+    }
+
+    .dim-row {
+      grid-template-columns: 60px minmax(42px, 1fr) 42px;
+      gap: 8px;
+    }
+
+    .dim-label {
+      font-size: 0.86rem;
+      line-height: 1;
+    }
+
+    .dim-score {
+      font-size: 0.78rem;
+      line-height: 1;
+    }
+
+    .dim-track {
+      height: 6px;
+    }
+
+    .metric-group {
+      padding: 16px 12px 13px;
+    }
+
+    .metric-ring {
+      --size: 72px;
+      margin-bottom: 7px;
+    }
+
+    .metric-title {
+      font-size: 0.86rem;
+      margin-bottom: 4px;
+    }
+
+    .metric-subtitle {
+      font-size: 0.62rem;
+      line-height: 1.15;
+    }
+
+    .metric-value {
+      font-size: 0.95rem;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="dashboard-shell">
+  <h1 class="app-title">系统状态</h1>
+
+  <section class="runtime-card" aria-label="本次运行时间">
+    <span class="runtime-label">本次运行时间</span>
+    <span class="runtime-value" id="runtimeDisplay">-- 天 -- 时 -- 分</span>
+  </section>
+
+  <span class="error-tag" id="errorTag">数据刷新失败</span>
+
+  <section class="health-card" aria-label="健康评分">
+    <div class="score-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+        <circle class="ring-fg" id="scoreRingFg" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <div class="score-center">
+        <div class="score-value" id="scoreValue">--</div>
+        <div class="score-label">健康评分</div>
+      </div>
+    </div>
+    <div class="health-bars" id="dimBars"></div>
+  </section>
+
+  <section class="metric-card-grid" id="metricGrid" aria-label="系统指标"></section>
+</main>
+
+<script>
+const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
+
+function clampPercent(value) {
+  var number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(100, number));
+}
+
+function fmtUptime(sec) {
+  if (!Number.isFinite(Number(sec)) || sec < 0) return "-- 天 -- 时 -- 分";
+  var d = Math.floor(sec / 86400);
+  var h = Math.floor((sec % 86400) / 3600);
+  var m = Math.floor((sec % 3600) / 60);
+  return d + " 天 " + h + " 时 " + m + " 分";
+}
+
+function colorForScore(score) {
+  var number = Number(score);
+  if (!Number.isFinite(number)) return "#e8453c";
+  if (number >= 80) return "#19be5d";
+  if (number >= 60) return "#f97316";
+  return "#e8453c";
+}
+
+function colorForPercentMetric(value) {
+  var number = Number(value);
+  if (!Number.isFinite(number)) return "#9aa0aa";
+  if (number > 90) return "#e8453c";
+  if (number > 60) return "#f97316";
+  return "#19be5d";
+}
+
+function colorForLatency(value) {
+  var number = Number(value);
+  if (!Number.isFinite(number)) return "#9aa0aa";
+  if (number > 300) return "#e8453c";
+  if (number > 100) return "#f97316";
+  return "#19be5d";
+}
+
+function colorForTemperature(value) {
+  var number = Number(value);
+  if (!Number.isFinite(number)) return "#9aa0aa";
+  if (number >= 80) return "#e8453c";
+  if (number > 60) return "#f97316";
+  return "#19be5d";
+}
+
+function setRing(circle, percent, color) {
+  var safePercent = clampPercent(percent);
+  circle.setAttribute("stroke-dasharray", RING_CIRCUMFERENCE.toFixed(1));
+  circle.setAttribute("stroke-dashoffset", (RING_CIRCUMFERENCE * (1 - safePercent / 100)).toFixed(2));
+  circle.setAttribute("stroke", color);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatMetricNumber(value, fallback) {
+  if (value === null || value === undefined || value === "") return fallback || "N/A";
+  return String(value);
+}
+
+function formatMetricInteger(value, fallback) {
+  var number = Number(value);
+  if (!Number.isFinite(number)) return fallback || "N/A";
+  return String(Math.round(number));
+}
+
+function findDimension(score, name) {
+  return (score.dimensions || []).find(function(item) {
+    return item.name === name;
+  }) || {};
+}
+
+function renderDimBars(score) {
+  var preferredOrder = ["CPU", "CPU温度", "系统负载", "响应延迟", "内存", "磁盘"];
+  var dims = preferredOrder.map(function(name) {
+    var dim = findDimension(score, name);
+    return {
+      name: name,
+      subScore: dim.sub_score === undefined ? 100 : clampPercent(dim.sub_score),
+      color: colorForScore(dim.sub_score === undefined ? 100 : dim.sub_score)
+    };
+  });
+
+  document.getElementById("dimBars").innerHTML = dims.map(function(dim) {
+    return [
+      '<div class="dim-row">',
+      '<span class="dim-label">' + escapeHtml(dim.name) + '</span>',
+      '<div class="dim-track"><div class="dim-fill" style="width:' + dim.subScore + '%;background:' + dim.color + '"></div></div>',
+      '<span class="dim-score" style="color:' + dim.color + '">' + dim.subScore + '分</span>',
+      '</div>'
+    ].join("");
+  }).join("");
+}
+
+function createMetricCard(metric, index) {
+  var ringId = "metricRing" + index;
+  return [
+    '<article class="metric-card">',
+    '<div class="metric-ring">',
+    '<svg viewBox="0 0 120 120" aria-hidden="true">',
+    '<circle class="ring-bg" cx="60" cy="60" r="52"></circle>',
+    '<circle class="ring-fg" id="' + ringId + '" cx="60" cy="60" r="52"></circle>',
+    '</svg>',
+    '<div class="metric-center"><span class="metric-value">' + escapeHtml(metric.value) + '</span></div>',
+    '</div>',
+    '<div class="metric-title">' + escapeHtml(metric.title) + '</div>',
+    '<div class="metric-subtitle">' + escapeHtml(metric.subtitle) + '</div>',
+    '</article>'
+  ].join("");
+}
+
+function createMetricGroup(className, metrics, startIndex) {
+  return [
+    '<div class="metric-group ' + className + '">',
+    metrics.map(function(metric, offset) {
+      return createMetricCard(metric, startIndex + offset);
+    }).join(""),
+    '</div>'
+  ].join("");
+}
+
+function renderMetrics(stats, score, ha) {
+  var cpu = stats.cpu || {};
+  var mem = stats.memory || {};
+  var disks = stats.disks || [];
+  var disk = disks[0] || {};
+  var load = stats.load || {};
+  var temp = stats.temperature;
+  var haData = ha || {};
+  var latencyValue = haData.latency_ms;
+  var cpuCount = Number(cpu.count);
+  var load1 = Number(load.load1);
+  var hasLoad = Number.isFinite(load1) && Number.isFinite(cpuCount) && cpuCount > 0;
+  var rawLoadPercent = hasLoad ? Math.max(0, (load1 / cpuCount) * 100) : 0;
+  var loadPercent = Math.min(100, rawLoadPercent);
+  var tempPercent = temp === null || temp === undefined ? 0 : Math.min(100, Number(temp) / 90 * 100);
+  var latencyPercent = latencyValue === null || latencyValue === undefined ? 0 : Math.min(100, Number(latencyValue));
+
+  var metrics = [
+    {
+      title: "CPU",
+      value: formatMetricInteger(cpu.percent, "N/A") + "%",
+      subtitle: formatMetricNumber(cpu.count, "--") + " 核心",
+      percent: cpu.percent,
+      color: colorForPercentMetric(Number(cpu.percent || 0))
+    },
+    {
+      title: "温度",
+      value: temp === null || temp === undefined ? "N/A" : formatMetricInteger(temp) + "°",
+      subtitle: "CPU",
+      percent: tempPercent,
+      color: temp === null || temp === undefined ? "#9aa0aa" : colorForTemperature(Number(temp))
+    },
+    {
+      title: "系统负载",
+      value: hasLoad ? formatMetricInteger(rawLoadPercent) + "%" : "N/A",
+      subtitle: "CPU",
+      percent: loadPercent,
+      color: hasLoad ? colorForPercentMetric(rawLoadPercent) : "#9aa0aa"
+    },
+    {
+      title: "响应延迟",
+      value: latencyValue === null || latencyValue === undefined ? "--" : formatMetricInteger(latencyValue) + "ms",
+      subtitle: "系统响应时间",
+      percent: latencyPercent,
+      color: latencyValue === null || latencyValue === undefined ? "#9aa0aa" : colorForLatency(Number(latencyValue))
+    },
+    {
+      title: "内存",
+      value: formatMetricInteger(mem.percent, "N/A") + "%",
+      subtitle: formatMetricNumber(mem.used, "--") + " / " + formatMetricNumber(mem.total, "--") + " GB",
+      percent: mem.percent,
+      color: colorForPercentMetric(Number(mem.percent || 0))
+    },
+    {
+      title: "磁盘",
+      value: disk.percent === null || disk.percent === undefined ? "N/A" : formatMetricInteger(disk.percent) + "%",
+      subtitle: formatMetricNumber(disk.used, "--") + " / " + formatMetricNumber(disk.total, "--") + " GB",
+      percent: disk.percent,
+      color: colorForPercentMetric(Number(disk.percent || 0))
+    }
+  ];
+
+  var grid = document.getElementById("metricGrid");
+  grid.innerHTML = [
+    createMetricGroup("metric-group-primary", metrics.slice(0, 3), 0),
+    createMetricGroup("metric-group-secondary", metrics.slice(3), 3)
+  ].join("");
+  metrics.forEach(function(metric, index) {
+    setRing(document.getElementById("metricRing" + index), metric.percent, metric.color);
+  });
+}
+
+function renderPage(stats, score, ha) {
+  document.getElementById("runtimeDisplay").textContent = fmtUptime(stats.uptime);
+
+  var scoreValue = clampPercent(score.total);
+  var scoreColor = colorForScore(score.total);
+  setRing(document.getElementById("scoreRingFg"), scoreValue, scoreColor);
+  document.getElementById("scoreValue").textContent = scoreValue;
+  document.getElementById("scoreValue").style.color = scoreColor;
+
+  renderDimBars(score);
+  renderMetrics(stats, score, ha);
+}
+
+async function refresh() {
+  var errorTag = document.getElementById("errorTag");
+  try {
+    var responses = await Promise.all([fetch("api/stats"), fetch("api/health")]);
+    if (!responses[0].ok || !responses[1].ok) throw Error("request failed");
+    var statsPayload = await responses[0].json();
+    var healthPayload = await responses[1].json();
+    if (!statsPayload.ok || !healthPayload.ok) throw Error(statsPayload.error || healthPayload.error || "payload failed");
+    renderPage(statsPayload.data, healthPayload.data.score, healthPayload.data.ha);
+    errorTag.classList.remove("is-visible");
+  } catch (err) {
+    console.error(err);
+    errorTag.classList.add("is-visible");
+  }
+}
+
+setRing(document.getElementById("scoreRingFg"), 0, "#19be5d");
+refresh();
+setInterval(refresh, {{ refresh_interval }} * 1000);
+</script>
+</body>
+</html>

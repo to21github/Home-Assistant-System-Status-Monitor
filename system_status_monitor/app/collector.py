@@ -327,7 +327,7 @@ def collect_ha_status():
             resp = requests.get(
                 f"{SUPERVISOR_URL}/core/api/",
                 headers=headers,
-                timeout=5,
+                timeout=2,
             )
             lat = (time.monotonic() - t0) * 1000
             if resp.status_code in (200, 401):

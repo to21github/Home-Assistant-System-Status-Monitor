@@ -1,5 +1,5 @@
 name: "系统状态监控"
-version: "1.0.6"
+version: "1.1.0"
 slug: "system_status_monitor"
 description: "实时监控 Home Assistant 系统健康状态的 Web 仪表盘"
 arch:

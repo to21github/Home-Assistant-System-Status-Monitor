@@ -1,5 +1,5 @@
 name: 系统状态监控
-url: https://github.com/to21github/System-Status-Monitor
+url: https://github.com/to21github/Home-Assistant-System-Status-Monitor
 maintainer: to21github
 addons:
   - system_status_monitor

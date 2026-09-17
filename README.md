@@ -28,7 +28,7 @@
 ## 数据说明
 
 - 内存：优先读取 `/proc/meminfo`，按 `MemTotal - MemAvailable` 计算真实已用内存
-- 磁盘：优先通过 Supervisor `/host/info` 读取宿主机磁盘容量
+- 磁盘：优先通过 `statvfs` 直查 `/data` 数据分区（不依赖 Supervisor API 版本），失败时回退 Supervisor `/host/info`
 - 温度：优先读取 CPU 温度传感器，读取不到时显示 `N/A`
 - 响应延迟：通过 Home Assistant Core API 探测平均响应时间
 
@@ -62,8 +62,8 @@
 
 ```yaml
 refresh_interval: 30
-port: 8099
 ```
 
 - `refresh_interval`：刷新间隔，范围 5 到 300 秒
-- `port`：服务端口，默认 8099
+
+> 服务端口由 Home Assistant Ingress 自动管理，无需配置。

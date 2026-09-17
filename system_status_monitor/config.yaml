@@ -1,5 +1,5 @@
 name: "系统状态监控"
-version: "1.1.0"
+version: "1.1.1"
 slug: "system_status_monitor"
 description: "实时监控 Home Assistant 系统健康状态的 Web 仪表盘"
 arch:
@@ -18,7 +18,5 @@ homeassistant_api: true
 init: false
 options:
   refresh_interval: 30
-  port: 8099
 schema:
   refresh_interval: int(5,300)
-  port: int(1024,65535)

@@ -1,5 +1,5 @@
 name: "系统状态监控"
-version: "1.1.3"
+version: "1.1.4"
 slug: "system_status_monitor"
 image: ghcr.io/to21github/system-status-monitor
 description: "实时监控 Home Assistant 系统健康状态的 Web 仪表盘"

@@ -172,7 +172,7 @@ def calculate(stats, ha_status):
         "penalty": ha_penalty,
         "sub_score": max(0, 100 - ha_penalty),
         "level": level,
-        "detail": f"延迟 {latency}ms" if latency else "无数据",
+        "detail": f"延迟 {latency}ms" if latency is not None else "无数据",
     })
 
     # ---- 汇总 ----

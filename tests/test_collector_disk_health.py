@@ -67,54 +67,45 @@ class CollectorMetricsTest(unittest.TestCase):
         get.assert_called_once()
         self.assertEqual(get.call_args.args[0], "http://supervisor/host/info")
 
-    def test_supervisor_default_disk_usage_matches_storage_page_source(self):
-        total_bytes = 64 * collector._BYTE_GB
-        used_bytes = 21.25 * collector._BYTE_GB
+    def test_statvfs_data_disk_supplies_data_partition_usage(self):
+        class FakeStatvfs:
+            f_frsize = 4096
+            f_blocks = 16 * 1024 * 1024   # 64 GB
+            f_bavail = 12 * 1024 * 1024   # 48 GB 可用
 
-        class FakeResponse:
-            def raise_for_status(self):
-                pass
-
-            def json(self):
-                return {
-                    "result": "ok",
-                    "data": {
-                        "id": "root",
-                        "label": "Default",
-                        "total_space": total_bytes,
-                        "used_space": used_bytes,
-                    },
-                }
-
-        with patch.dict("os.environ", {"SUPERVISOR_TOKEN": "token"}, clear=False):
-            with patch("collector.requests.get", return_value=FakeResponse()) as get:
-                disks = collector._collect_default_disk_usage()
+        with patch("collector.os.statvfs", return_value=FakeStatvfs()) as statvfs:
+            disks = collector._collect_data_disk()
 
         self.assertEqual(
             disks,
             [
                 {
-                    "mount": "default",
+                    "mount": "/data",
                     "total": 64.0,
-                    "used": 21.2,
-                    "free": 42.8,
-                    "percent": 33.2,
-                    "source": "supervisor_default_disk_usage",
+                    "used": 16.0,
+                    "free": 48.0,
+                    "percent": 25.0,
+                    "source": "statvfs_data",
                 }
             ],
         )
-        get.assert_called_once()
-        self.assertEqual(get.call_args.args[0], "http://supervisor/host/disks/default/usage")
+        statvfs.assert_called_once_with("/data")
 
-    def test_disk_collection_prefers_storage_page_usage_before_host_info(self):
-        with patch("collector._collect_default_disk_usage", return_value=[{
-            "mount": "default",
+    def test_statvfs_failure_returns_empty_for_fallback(self):
+        with patch("collector.os.statvfs", side_effect=OSError("No such file or directory")):
+            disks = collector._collect_data_disk()
+
+        self.assertEqual(disks, [])
+
+    def test_disk_collection_prefers_statvfs_before_supervisor(self):
+        with patch("collector._collect_data_disk", return_value=[{
+            "mount": "/data",
             "total": 64.0,
-            "used": 21.2,
-            "free": 42.8,
-            "percent": 33.2,
-            "source": "supervisor_default_disk_usage",
-        }]) as default_usage:
+            "used": 16.0,
+            "free": 48.0,
+            "percent": 25.0,
+            "source": "statvfs_data",
+        }]) as data_disk:
             with patch("collector._collect_host_disks", return_value=[{
                 "mount": "host",
                 "total": 57.8,
@@ -125,9 +116,24 @@ class CollectorMetricsTest(unittest.TestCase):
             }]) as host_info:
                 disks = collector._collect_disks()
 
-        self.assertEqual(disks[0]["source"], "supervisor_default_disk_usage")
-        default_usage.assert_called_once()
+        self.assertEqual(disks[0]["source"], "statvfs_data")
+        data_disk.assert_called_once()
         host_info.assert_not_called()
+
+    def test_disk_collection_falls_back_to_supervisor_when_statvfs_fails(self):
+        with patch("collector._collect_data_disk", return_value=[]):
+            with patch("collector._collect_host_disks", return_value=[{
+                "mount": "host",
+                "total": 57.8,
+                "used": 14.0,
+                "free": 43.8,
+                "percent": 24.2,
+                "source": "supervisor_host_info",
+            }]) as host_info:
+                disks = collector._collect_disks()
+
+        self.assertEqual(disks[0]["source"], "supervisor_host_info")
+        host_info.assert_called_once()
 
     def test_collected_stats_do_not_include_disk_life_payload(self):
         collector._cache = None

@@ -147,6 +147,33 @@ def _number_or_none(value):
     return None
 
 
+def _collect_data_disk():
+    """数据磁盘用量 (/data 所在分区), 不依赖 Supervisor API 版本。
+
+    HAOS 中所有用户数据（配置、插件、数据库、备份、Docker 数据）都在
+    /data 分区；插件内的 /data 挂载点即宿主机数据分区，statvfs 查询该
+    挂载点即可得到整个分区的用量（对应 HA 界面的"数据磁盘"）。
+    """
+    try:
+        st = os.statvfs("/data")
+        total = st.f_blocks * st.f_frsize
+        free = st.f_bavail * st.f_frsize
+        if total <= 0:
+            return []
+        used = total - free
+        return [{
+            "mount": "/data",
+            "total": round(total / _BYTE_GB, 1),
+            "used": round(used / _BYTE_GB, 1),
+            "free": round(free / _BYTE_GB, 1),
+            "percent": round((used / total) * 100, 1),
+            "source": "statvfs_data",
+        }]
+    except OSError:
+        _log.debug("statvfs(/data) 读取失败，回退 Supervisor API", exc_info=True)
+        return []
+
+
 def _collect_host_disks():
     """优先通过 Supervisor 读取宿主机磁盘容量。"""
     try:
@@ -205,7 +232,13 @@ def _collect_mount_disks():
 
 
 def _collect_disks():
-    return _collect_host_disks() or _collect_mount_disks()
+    # 优先 statvfs 直查 /data 数据分区（不依赖 Supervisor API 版本），
+    # 失败时回退 Supervisor host/info，最后回退本地挂载点。
+    return (
+        _collect_data_disk()
+        or _collect_host_disks()
+        or _collect_mount_disks()
+    )
 
 
 def collect():
@@ -237,7 +270,7 @@ def _do_collect():
     # --- 内存 ---
     memory = _collect_memory()
 
-    # --- 磁盘（优先读取宿主机，失败回退 / 和 /data）---
+    # --- 磁盘（优先 statvfs 查 /data 数据分区，失败回退 Supervisor / 本地挂载点）---
     disks = _collect_disks()
 
     # --- 负载 ---

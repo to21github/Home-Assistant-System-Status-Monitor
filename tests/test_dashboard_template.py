@@ -69,7 +69,7 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"\.app-subtitle\s*\{[^}]*color:\s*#9a9a9a;",
+                r"\.app-subtitle\s*\{[^}]*color:\s*#9a9a9a;[^}]*font-size:\s*12px;",
                 re.S,
             ),
         )

@@ -46,16 +46,13 @@
     background: var(--page);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
-    padding: 18px 42px 30px;
+    padding: 18px clamp(30px, 4vw, 64px) 30px;
   }
 
   .dashboard-shell {
     width: 100%;
-    max-width: 1780px;
+    max-width: 1506px;
     margin: 0 auto;
-    zoom: 0.88;
-    transform: scale(0.88);
-    transform-origin: top center;
   }
 
   .header-bar {
@@ -447,8 +444,6 @@
 
     .dashboard-shell {
       max-width: none;
-      zoom: 1;
-      transform: none;
     }
 
     .runtime-card {

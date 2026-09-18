@@ -55,7 +55,7 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"body\s*\{[^}]*padding:\s*18px 42px 30px;",
+                r"body\s*\{[^}]*padding:\s*18px clamp\(30px,\s*4vw,\s*64px\) 30px;",
                 re.S,
             ),
         )
@@ -98,11 +98,12 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"\.dashboard-shell\s*\{[^}]*zoom:\s*0\.88;[^}]*transform:\s*scale\(0\.88\);",
+                r"\.dashboard-shell\s*\{[^}]*max-width:\s*1506px;",
                 re.S,
             ),
         )
-        self.assertNotIn("scale(0.76)", self.template)
+        self.assertNotIn("zoom:", self.template)
+        self.assertNotIn("scale(", self.template)
         self.assertRegex(
             self.template,
             re.compile(

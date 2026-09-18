@@ -76,7 +76,7 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"\.score-value\s*\{[^}]*font-size:\s*clamp\(3\.1rem,\s*4vw,\s*4\.2rem\);[^}]*font-weight:\s*800;",
+                r"\.score-value\s*\{[^}]*font-size:\s*clamp\(2\.33rem,\s*3vw,\s*3\.15rem\);[^}]*font-weight:\s*800;",
                 re.S,
             ),
         )
@@ -163,16 +163,16 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"\.dim-label\s*\{[^}]*font-size:\s*clamp\(1\.22rem,\s*1\.32vw,\s*1\.52rem\);[^}]*\}"
-                r".*\.metric-title\s*\{[^}]*font-size:\s*clamp\(1\.22rem,\s*1\.32vw,\s*1\.52rem\);",
+                r"\.dim-label\s*\{[^}]*font-size:\s*clamp\(0\.92rem,\s*0\.99vw,\s*1\.14rem\);[^}]*\}"
+                r".*\.metric-title\s*\{[^}]*font-size:\s*clamp\(0\.92rem,\s*0\.99vw,\s*1\.14rem\);",
                 re.S,
             ),
         )
         self.assertRegex(
             self.template,
             re.compile(
-                r"@media \(max-width:\s*980px\)\s*\{.*\.dim-label\s*\{[^}]*font-size:\s*1\.32rem;[^}]*\}"
-                r".*\.metric-title\s*\{[^}]*font-size:\s*1\.32rem;",
+                r"@media \(max-width:\s*980px\)\s*\{.*\.dim-label\s*\{[^}]*font-size:\s*0\.99rem;[^}]*\}"
+                r".*\.metric-title\s*\{[^}]*font-size:\s*0\.99rem;",
                 re.S,
             ),
         )

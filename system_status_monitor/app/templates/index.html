@@ -146,38 +146,38 @@
   }
 
   .runtime-card {
-    min-height: 98px;
+    min-height: 74px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 54px;
     margin-bottom: 22px;
-    padding: 22px 34px;
+    padding: 17px 34px;
   }
 
   .runtime-label {
     color: var(--muted);
-    font-size: clamp(1.25rem, 1.35vw, 1.65rem);
+    font-size: clamp(0.94rem, 1.01vw, 1.24rem);
     white-space: nowrap;
     flex-shrink: 0;
   }
 
   .runtime-value {
     color: var(--text);
-    font-size: clamp(1.28rem, 1.45vw, 1.78rem);
+    font-size: clamp(0.96rem, 1.09vw, 1.34rem);
     white-space: nowrap;
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
   }
 
   .health-card {
-    min-height: 340px;
+    min-height: 255px;
     display: grid;
     grid-template-columns: 330px 1fr;
     align-items: center;
     gap: clamp(48px, 5vw, 98px);
     margin-bottom: 22px;
-    padding: 42px clamp(70px, 7vw, 116px);
+    padding: 32px clamp(70px, 7vw, 116px);
   }
 
   .score-ring {
@@ -224,7 +224,7 @@
 
   .score-value {
     color: var(--green);
-    font-size: clamp(3.1rem, 4vw, 4.2rem);
+    font-size: clamp(2.33rem, 3vw, 3.15rem);
     font-weight: 800;
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -232,7 +232,7 @@
 
   .score-label {
     color: var(--score-label);
-    font-size: 1.08rem;
+    font-size: 0.81rem;
     margin-top: 10px;
   }
 
@@ -250,7 +250,7 @@
 
   .dim-label {
     color: var(--text);
-    font-size: clamp(1.22rem, 1.32vw, 1.52rem);
+    font-size: clamp(0.92rem, 0.99vw, 1.14rem);
     white-space: nowrap;
   }
 
@@ -271,7 +271,7 @@
 
   .dim-score {
     color: var(--green);
-    font-size: clamp(1.12rem, 1.28vw, 1.44rem);
+    font-size: clamp(0.84rem, 0.96vw, 1.08rem);
     text-align: right;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
@@ -281,8 +281,8 @@
     display: grid;
     grid-template-columns: repeat(6, minmax(118px, 1fr));
     gap: clamp(16px, 2.3vw, 42px);
-    min-height: 338px;
-    padding: 62px clamp(44px, 5vw, 82px) 50px;
+    min-height: 254px;
+    padding: 47px clamp(44px, 5vw, 82px) 38px;
   }
 
   .metric-group {
@@ -314,7 +314,7 @@
 
   .metric-value {
     color: var(--metric-value);
-    font-size: clamp(1.38rem, 1.55vw, 1.82rem);
+    font-size: clamp(1.04rem, 1.16vw, 1.37rem);
     line-height: 1;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
@@ -322,7 +322,7 @@
 
   .metric-title {
     color: var(--text);
-    font-size: clamp(1.22rem, 1.32vw, 1.52rem);
+    font-size: clamp(0.92rem, 0.99vw, 1.14rem);
     line-height: 1.1;
     margin-bottom: 8px;
     white-space: nowrap;
@@ -330,7 +330,7 @@
 
   .metric-subtitle {
     color: var(--subtitle);
-    font-size: clamp(0.86rem, 0.94vw, 1rem);
+    font-size: clamp(0.65rem, 0.71vw, 0.75rem);
     line-height: 1.25;
     min-height: 1.25em;
   }
@@ -360,17 +360,17 @@
     }
 
     .runtime-card {
-      min-height: 99px;
+      min-height: 74px;
       gap: 46px;
       margin-bottom: 22px;
-      padding: 20px 28px;
+      padding: 15px 28px;
     }
 
     .health-card {
-      min-height: 302px;
+      min-height: 227px;
       grid-template-columns: 168px 1fr;
       gap: 46px;
-      padding: 32px 44px 32px 30px;
+      padding: 24px 44px 24px 30px;
     }
 
     .score-ring {
@@ -378,11 +378,11 @@
     }
 
     .score-value {
-      font-size: 2.42rem;
+      font-size: 1.82rem;
     }
 
     .score-label {
-      font-size: 0.72rem;
+      font-size: 0.54rem;
       margin-top: 4px;
     }
 
@@ -396,11 +396,11 @@
     }
 
     .dim-label {
-      font-size: 1.32rem;
+      font-size: 0.99rem;
     }
 
     .dim-score {
-      font-size: 1.22rem;
+      font-size: 0.92rem;
     }
 
     .dim-track {
@@ -410,8 +410,8 @@
     .metric-card-grid {
       grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 0 22px;
-      min-height: 268px;
-      padding: 28px 36px 20px;
+      min-height: 201px;
+      padding: 21px 36px 15px;
     }
 
     .metric-ring {
@@ -420,12 +420,12 @@
     }
 
     .metric-title {
-      font-size: 1.32rem;
+      font-size: 0.99rem;
       margin-bottom: 6px;
     }
 
     .metric-subtitle {
-      font-size: 0.95rem;
+      font-size: 0.71rem;
     }
   }
 

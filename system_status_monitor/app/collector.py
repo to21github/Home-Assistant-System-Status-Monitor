@@ -180,7 +180,7 @@ def _collect_host_disks():
         resp = requests.get(
             SUPERVISOR_HOST_INFO_URL,
             headers=_supervisor_headers(),
-            timeout=5,
+            timeout=2,
         )
         resp.raise_for_status()
         payload = resp.json()

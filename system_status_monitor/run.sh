@@ -5,4 +5,4 @@ set -e
 PORT="${PORT:-${INGRESS_PORT:-8099}}"
 
 echo "系统状态监控启动中，端口: $PORT"
-exec gunicorn -w 2 -b "0.0.0.0:${PORT}" --timeout 30 --access-logfile - "main:app"
+exec gunicorn -w 1 -b "0.0.0.0:${PORT}" --timeout 30 --access-logfile - "main:app"

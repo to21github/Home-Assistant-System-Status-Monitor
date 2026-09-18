@@ -55,7 +55,7 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"body\s*\{[^}]*padding:\s*18px clamp\(30px,\s*4vw,\s*64px\) 30px;",
+                r"body\s*\{[^}]*padding:\s*24px clamp\(30px,\s*4vw,\s*64px\) 30px;",
                 re.S,
             ),
         )

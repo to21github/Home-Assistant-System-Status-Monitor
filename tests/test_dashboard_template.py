@@ -98,7 +98,7 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"\.dashboard-shell\s*\{[^}]*max-width:\s*1506px;",
+                r"\.dashboard-shell\s*\{[^}]*max-width:\s*1378px;",
                 re.S,
             ),
         )

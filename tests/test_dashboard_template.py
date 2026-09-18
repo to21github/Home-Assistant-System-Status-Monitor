@@ -13,15 +13,16 @@ class DashboardTemplateTest(unittest.TestCase):
 
     def test_reference_layout_sections_are_present(self):
         self.assertIn('class="app-title"', self.template)
-        self.assertIn('class="page-header"', self.template)
-        self.assertIn('class="app-subtitle"', self.template)
+        self.assertIn('class="runtime-card"', self.template)
         self.assertIn('class="health-card"', self.template)
         self.assertIn('class="metric-card-grid"', self.template)
         self.assertIn("<title>系统状态</title>", self.template)
         self.assertIn('<h1 class="app-title">系统状态</h1>', self.template)
-        self.assertNotIn("刷新间隔", self.template)
+        self.assertIn('class="header-bar"', self.template)
+        self.assertIn('class="app-subtitle"', self.template)
         self.assertIn("Home Assistant 系统运行状态及健康评分", self.template)
         self.assertIn('id="refreshBtn"', self.template)
+        self.assertNotIn("刷新间隔", self.template)
 
     def test_metric_grid_matches_desktop_and_mobile_references(self):
         self.assertNotIn("磁盘寿命", self.template)
@@ -75,7 +76,7 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"\.health-card,\s*\.metric-card-grid,\s*\.metric-group\s*\{[^}]*border:\s*1px solid var\(--card-border\);[^}]*box-shadow:\s*var\(--card-shadow\);",
+                r"\.runtime-card,\s*\.health-card,\s*\.metric-card-grid,\s*\.metric-group\s*\{[^}]*border:\s*1px solid var\(--card-border\);[^}]*box-shadow:\s*var\(--card-shadow\);",
                 re.S,
             ),
         )

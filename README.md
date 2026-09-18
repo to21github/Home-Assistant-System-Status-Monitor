@@ -13,12 +13,6 @@
 
 ## 功能
 
-<div align="center">
-  <img src="img/screenshot-light.png" width="800" alt="浅色界面">
-  <br><br>
-  <img src="img/screenshot-dark.png" width="800" alt="深色界面">
-</div>
-
 - 显示本次运行时间
 - 显示综合健康评分
 - 显示 CPU、温度、系统负载、响应延迟、内存、磁盘

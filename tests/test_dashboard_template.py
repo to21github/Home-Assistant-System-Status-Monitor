@@ -62,10 +62,12 @@ class DashboardTemplateTest(unittest.TestCase):
         self.assertRegex(
             self.template,
             re.compile(
-                r"\.app-title\s*\{[^}]*font-size:\s*22px;[^}]*font-weight:\s*600;[^}]*letter-spacing:\s*0\.5px;[^}]*color:\s*#ffffff;",
+                r"\.app-title\s*\{[^}]*font-size:\s*22px;[^}]*font-weight:\s*600;[^}]*letter-spacing:\s*0\.5px;[^}]*color:\s*var\(--title\);",
                 re.S,
             ),
         )
+        self.assertRegex(self.template, r"--title:\s*#171b20;")
+        self.assertRegex(self.template, r"--title:\s*#ffffff;")
         self.assertRegex(
             self.template,
             re.compile(
@@ -139,7 +141,8 @@ class DashboardTemplateTest(unittest.TestCase):
                 r"--card-shadow:\s*none;[^}]*"
                 r"--text:\s*#e8e8e8;[^}]*"
                 r"--muted:\s*#a0a0a0;[^}]*"
-                r"--soft:\s*#232b26;",
+                r"--soft:\s*#232b26;[^}]*"
+                r"--title:\s*#ffffff;",
                 re.S,
             ),
         )

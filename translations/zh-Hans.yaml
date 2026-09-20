@@ -1,0 +1,4 @@
+configuration:
+  refresh_interval:
+    name: 刷新间隔
+    description: 仪表盘数据自动刷新频率（秒），范围 5–300

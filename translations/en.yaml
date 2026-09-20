@@ -1,0 +1,4 @@
+configuration:
+  refresh_interval:
+    name: Refresh interval
+    description: Dashboard auto-refresh rate in seconds (5-300)
